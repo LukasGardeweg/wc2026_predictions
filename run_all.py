@@ -8,6 +8,7 @@ Ablauf:
   2. Oddspedia scrapen    -> raw_data_pre_wm/wm2026_oddspedia_DD.MM.YYYY.xlsx
   3. Oddschecker scrapen  -> raw_data_pre_wm/wm2026_oddschecker_DD.MM.YYYY.xlsx
   4. processed_data_long.xlsx mit neuen Daten erweitern
+  5. PNG-Charts (Balkendiagramm & Zeitverlauf) fuer README aktualisieren
 
 Verwendung:
     python run_all.py             # Browser sichtbar
@@ -32,6 +33,9 @@ RAW_DIR = wm_paths.raw_dir()
 # Hilfsfunktion: Schritt-Header
 # ---------------------------------------------------------------------------
 
+TOTAL_STEPS = 5
+
+
 def _header(step: int, total: int, title: str):
     print()
     print(f"{'=' * 60}")
@@ -44,7 +48,7 @@ def _header(step: int, total: int, title: str):
 # ---------------------------------------------------------------------------
 
 def run_wettfreunde() -> bool:
-    _header(1, 4, "Wettfreunde  (Interwetten)")
+    _header(1, TOTAL_STEPS, "Wettfreunde  (Interwetten)")
     try:
         import scraper_wettfreunde
         scraper_wettfreunde.main()
@@ -56,7 +60,7 @@ def run_wettfreunde() -> bool:
 
 
 def run_oddspedia(headless: bool) -> bool:
-    _header(2, 4, "Oddspedia  (bet365, Bwin)")
+    _header(2, TOTAL_STEPS, "Oddspedia  (bet365, Bwin)")
     try:
         import scraper_oddspedia
         scraper_oddspedia.main(headless=headless)
@@ -68,7 +72,7 @@ def run_oddspedia(headless: bool) -> bool:
 
 
 def run_oddschecker(headless: bool) -> bool:
-    _header(3, 4, "Oddschecker  (Unibet, Ladbrokes, Betway, Betfair)")
+    _header(3, TOTAL_STEPS, "Oddschecker  (Unibet, Ladbrokes, Betway, Betfair)")
     try:
         from scraper_oddschecker import scrape, save_excel
 
@@ -88,13 +92,26 @@ def run_oddschecker(headless: bool) -> bool:
 
 
 def run_update() -> bool:
-    _header(4, 4, "processed_data_long.xlsx aktualisieren")
+    _header(4, TOTAL_STEPS, "processed_data_long.xlsx aktualisieren")
     try:
         import update_processed_data
         update_processed_data.main()
         return True
     except Exception:
         print("  FEHLER beim Update:")
+        traceback.print_exc()
+        return False
+
+
+def run_png_charts() -> bool:
+    _header(5, TOTAL_STEPS, "PNG-Charts aktualisieren (Balkendiagramm & Zeitverlauf)")
+    try:
+        sys.path.insert(0, os.path.join(BASE, "visualization_png"))
+        import create_png_charts
+        create_png_charts.main()
+        return True
+    except Exception:
+        print("  FEHLER beim Erzeugen der PNG-Charts:")
         traceback.print_exc()
         return False
 
@@ -121,6 +138,7 @@ def main():
         "Oddspedia":    run_oddspedia(headless),
         "Oddschecker":  run_oddschecker(headless),
         "Update":       run_update(),
+        "PNG-Charts":   run_png_charts(),
     }
 
     # Zusammenfassung

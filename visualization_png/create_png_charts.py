@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 create_png_charts.py
-Erzeugt zwei publikationsreife PNG-Grafiken aus den aktuellen
-Shin-Wahrscheinlichkeiten (vor der WM):
+Erzeugt zwei publikationsreife PNG-Grafiken aus der durchgehenden
+Zeitreihe der Shin-Wahrscheinlichkeiten (pre_wm + during_wm):
 
-  1. Balkendiagramm: aktuelle Shin-Wahrscheinlichkeiten aller 48 Teams
-  2. Zeitverlauf: Top 15 Teams (Shin-Wahrscheinlichkeit) vor der WM
+  1. Balkendiagramm: Shin-Wahrscheinlichkeiten aller 48 Teams (neuester Snapshot)
+  2. Zeitverlauf: Top 15 Teams (Shin-Wahrscheinlichkeit) über die Zeit
 
-Beide Grafiken sind mit den jeweiligen Landesflaggen beschriftet.
+Beide Grafiken sind mit den jeweiligen Landesflaggen beschriftet und werden
+bei jedem Lauf mit dem jeweils neuesten Snapshot überschrieben, sodass sie
+parallel zum Turnierverlauf aktuell bleiben (siehe README.md).
 
 Verwendung: python create_png_charts.py
 """
@@ -20,16 +22,13 @@ import numpy as np
 import pandas as pd
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
-BASE             = os.path.dirname(os.path.abspath(__file__))
-PRE_WM_LONG_FILE = os.path.join(BASE, "processed_data_pre_wm", "processed_data_long.xlsx")
-FLAG_DIR         = os.path.join(BASE, "flags")
-BAR_OUTPUT       = os.path.join(BASE, "wm2026_balkendiagramm_alle_teams.png")
-LINE_OUTPUT      = os.path.join(BASE, "wm2026_zeitverlauf_top15_vor_wm.png")
-
-# Enddatum für die Auswertung (None = neuestes verfügbares Datum verwenden)
-# für beliebiges Datum 
-#CUTOFF_DATE = None
-CUTOFF_DATE = "2026-06-05"
+BASE                = os.path.dirname(os.path.abspath(__file__))
+ROOT                = os.path.dirname(BASE)
+PRE_WM_LONG_FILE    = os.path.join(ROOT, "processed_data_pre_wm", "processed_data_long.xlsx")
+DURING_WM_LONG_FILE = os.path.join(ROOT, "processed_data_during_wm", "processed_data_long.xlsx")
+FLAG_DIR            = os.path.join(BASE, "flags")
+BAR_OUTPUT          = os.path.join(BASE, "wm2026_balkendiagramm_alle_teams.png")
+LINE_OUTPUT         = os.path.join(BASE, "wm2026_zeitverlauf_top15.png")
 
 COLORS = [
     "#E63946", "#457B9D", "#2A9D8F", "#E9C46A", "#F4A261",
@@ -76,14 +75,30 @@ def get_flag(team):
 # Daten laden
 # ---------------------------------------------------------------------------
 
-def load_data():
-    df = pd.read_excel(PRE_WM_LONG_FILE)
+def _load_long(filepath):
+    """Lädt eine processed_data_long.xlsx. None falls (noch) keine Daten vorhanden."""
+    if not os.path.exists(filepath):
+        return None
+    df = pd.read_excel(filepath)
+    if df.empty or df.columns.empty:
+        return None
     df.columns = df.columns.astype(str).str.strip()
     df["Datum"] = pd.to_datetime(df["Datum"])
     df["Team"]  = df["Team"].astype(str).str.strip()
-    if CUTOFF_DATE is not None:
-        df = df[df["Datum"] <= pd.Timestamp(CUTOFF_DATE)]
     return df
+
+
+def load_data():
+    """
+    Lädt die durchgehende Zeitreihe der Shin-Wahrscheinlichkeiten:
+    pre_wm-Snapshots + during_wm-Snapshots (ab WM-Start, sobald vorhanden),
+    nach Datum sortiert. Wächst automatisch mit jedem neuen Snapshot.
+    """
+    df        = _load_long(PRE_WM_LONG_FILE)
+    df_during = _load_long(DURING_WM_LONG_FILE)
+    if df_during is not None and not df_during.empty:
+        df = pd.concat([df, df_during], ignore_index=True)
+    return df.sort_values("Datum").reset_index(drop=True)
 
 
 # ---------------------------------------------------------------------------
@@ -256,12 +271,22 @@ def build_line_chart(df):
     ax.set_ylabel("Siegwahrscheinlichkeit (%)", fontsize=11)
     ax.set_xlabel("Datum", fontsize=11)
     ax.set_title(
-        f"Zeitverlauf der Top 15 Siegwahrscheinlichkeiten vor der WM\n",
-        #f"Stand: · {first_date.strftime('%d.%m.%Y')} – {last_date.strftime('%d.%m.%Y')}",
+        f"Zeitverlauf der Top 15 Siegwahrscheinlichkeiten\n"
+        f"Stand: {last_date.strftime('%d.%m.%Y')}",
         fontsize=14, fontweight="bold", color="#2C3E50", pad=14,
     )
 
-    ax.set_xticks(dates)
+    # Bei vielen Snapshots (z.B. taegliche Updates waehrend der WM) nur eine
+    # Auswahl an Achsenbeschriftungen zeigen, damit sie nicht ueberlappen.
+    max_ticks = 20
+    if len(dates) <= max_ticks:
+        tick_dates = dates
+    else:
+        step = -(-len(dates) // max_ticks)  # ceil
+        tick_dates = dates[::step]
+        if tick_dates[-1] != dates[-1]:
+            tick_dates = tick_dates + [dates[-1]]
+    ax.set_xticks(tick_dates)
     ax.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter("%d.%m."))
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=9.5)
     ax.tick_params(axis="y", labelsize=9.5)
@@ -293,7 +318,7 @@ def main():
     print("Erzeuge Balkendiagramm (alle 48 Teams)...")
     build_bar_chart(df)
 
-    print("Erzeuge Zeitverlauf (Top 15, vor der WM)...")
+    print("Erzeuge Zeitverlauf (Top 15)...")
     build_line_chart(df)
 
 
