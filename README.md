@@ -99,3 +99,9 @@ single_games_predictions/       Single-match predictions during the tournament
 - Wunderlich, F., Seck, A., & Memmert, D. (2021). *The influence of randomness on goals in football decreases over time. An empirical analysis of randomness involved in goal scoring in the English Premier League.* Journal of Sports Sciences. https://doi.org/10.1080/02640414.2021.1930685
 - Odds: Oddschecker, Oddspedia, Wettfreunde (bookmakers: bet365, Bwin, Interwetten, Unibet, Ladbrokes, Betway, Betfair)
 - Shin model for removing the bookmakers' margin (overround) from implied probabilities
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
