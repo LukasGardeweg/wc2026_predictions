@@ -22,7 +22,7 @@ OUTCOMES = ["Heimsieg", "Unentschieden", "Heimniederlage"]
 BASE                = os.path.dirname(os.path.abspath(__file__))
 PRE_WM_LONG_FILE    = os.path.join(BASE, "processed_data_pre_wm", "processed_data_long.xlsx")
 DURING_WM_LONG_FILE = os.path.join(BASE, "processed_data_during_wm", "processed_data_long.xlsx")
-DURING_WM_FILE      = os.path.join(BASE, "Einzelspielprognosen", "processed_match_predictions.xlsx")
+DURING_WM_FILE      = os.path.join(BASE, "single_games_predictions", "processed_match_predictions.xlsx")
 OUTPUT_FILE         = os.path.join(BASE, "wm2026_probabilities.html")
 
 COLORS = [
@@ -850,7 +850,7 @@ def main():
     if df_during is not None:
         print(f"  {df_during['Spiel_ID'].nunique()} Spiel(e) gefunden")
     else:
-        print("  Noch keine Daten (processed_data_during_wm/ fehlt).")
+        print("  Noch keine Daten (single_games_predictions/processed_match_predictions.xlsx fehlt).")
     during_wm_html = build_during_wm_section(df_during)
 
     print("Baue Visualisierung...")

@@ -24,8 +24,8 @@ import shin
 # Pfade
 # ---------------------------------------------------------------------------
 BASE     = os.path.dirname(os.path.abspath(__file__))
-RAW_FILE = os.path.join(BASE, "single_games_prediction ", "raw_single_odds_during_wm.xlsx")
-OUT_FILE = os.path.join(BASE, "single_games_predictions", "processed_match_predictions.xlsx")
+RAW_FILE = os.path.join(BASE, "raw_single_odds_during_wm.xlsx")
+OUT_FILE = os.path.join(BASE, "processed_match_predictions.xlsx")
 
 # ---------------------------------------------------------------------------
 # Buchmacher-Spaltenpräfixe in der Rohdatei
