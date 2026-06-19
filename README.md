@@ -28,11 +28,11 @@ The two charts below show the **current state** of the prediction and are **auto
 
 ### Win probabilities of all 48 teams (Shin model)
 
-![Bar chart: win probabilities of all 48 teams](visualization_png/wm2026_balkendiagramm_alle_teams.png)
+![Bar chart](visualization_png/wm2026_balkendiagramm_alle_teams.png?raw=true)
 
 ### Time series of the Top 15
 
-![Time series of the Top 15 win probabilities](visualization_png/wm2026_zeitverlauf_top15.png)
+![Time series](visualization_png/wm2026_zeitverlauf_top15.png?raw=true)
 
 An interactive version with additional filters (Top 15 / ranks 16–30, Shin vs. normalisation method, before/during the tournament) is available in [`wm2026_probabilities.html`](wm2026_probabilities.html) – just open it locally in a browser.
 
