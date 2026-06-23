@@ -70,11 +70,14 @@ def load_wide(df):
 
 
 def rank_teams(df):
-    latest = df["Datum"].max()
+    # Letzten verfügbaren Wert pro Team verwenden – so bleiben ausgeschiedene
+    # Teams im Ranking sichtbar, auch wenn sie im neuesten Snapshot fehlen.
     return (
-        df[df["Datum"] == latest]
-        .sort_values("Wahrscheinlichkeit_Shin", ascending=False)
-        ["Team"].tolist()
+        df.sort_values("Datum")
+          .groupby("Team", as_index=False)
+          .last()
+          .sort_values("Wahrscheinlichkeit_Shin", ascending=False)
+          ["Team"].tolist()
     )
 
 
