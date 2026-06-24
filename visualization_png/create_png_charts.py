@@ -73,6 +73,8 @@ ELIMINATED = {
     "Haiti":    "Gruppenphase",
     "Tunesien": "Gruppenphase",
     "Türkei":   "Gruppenphase",
+    "Jordanien":  "Gruppenphase",
+    "Panama":    "Gruppenphase",
 }
 
 STAGE_LABEL = {
@@ -166,8 +168,10 @@ def _get_eliminated_df(df: pd.DataFrame, latest_teams: set) -> pd.DataFrame:
         if df_d is not None:
             during_wm_teams = set(df_d["Team"].unique())
 
-    auto_detected   = during_wm_teams - latest_teams
-    all_eliminated  = (set(ELIMINATED.keys()) | auto_detected) - latest_teams
+    auto_detected  = during_wm_teams - latest_teams
+    # Manuell eingetragene Teams immer als ausgeschieden behandeln –
+    # auch wenn Buchmacher noch Quoten zeigen (und sie im latest-Snapshot stehen).
+    all_eliminated = set(ELIMINATED.keys()) | auto_detected
 
     records = []
     for team in sorted(all_eliminated):
@@ -190,9 +194,9 @@ def build_bar_chart(df):
     latest       = df["Datum"].max()
     latest_teams = set(df[df["Datum"] == latest]["Team"].unique())
 
-    # Aktive Teams (im neuesten Snapshot vorhanden), sortiert nach Shin-Wahrscheinlichkeit
+    # Aktive Teams: im neuesten Snapshot vorhanden UND nicht manuell als ausgeschieden markiert
     sub_active = (
-        df[df["Datum"] == latest]
+        df[(df["Datum"] == latest) & (~df["Team"].isin(ELIMINATED))]
         .sort_values("Wahrscheinlichkeit_Shin_in_Prozent", ascending=False)
         .reset_index(drop=True)
     )
