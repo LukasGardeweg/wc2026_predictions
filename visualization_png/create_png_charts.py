@@ -17,6 +17,7 @@ Verwendung: python create_png_charts.py
 """
 
 import os
+import sys
 import urllib.request
 
 import matplotlib.pyplot as plt
@@ -27,6 +28,8 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 BASE                = os.path.dirname(os.path.abspath(__file__))
 ROOT                = os.path.dirname(BASE)
+sys.path.insert(0, ROOT)
+import wm_paths
 PRE_WM_LONG_FILE    = os.path.join(ROOT, "processed_data_pre_wm",    "processed_data_long.xlsx")
 DURING_WM_LONG_FILE = os.path.join(ROOT, "processed_data_during_wm", "processed_data_long.xlsx")
 FLAG_DIR            = os.path.join(BASE, "flags")
@@ -75,6 +78,9 @@ ELIMINATED = {
     "Türkei":   "Gruppenphase",
     "Jordanien":  "Gruppenphase",
     "Panama":    "Gruppenphase",
+    "Katar":     "Gruppenphase",
+    "Tschechien": "Gruppenphase",
+    "Curacao":   "Gruppenphase",
 }
 
 STAGE_LABEL = {
@@ -168,17 +174,26 @@ def _get_eliminated_df(df: pd.DataFrame, latest_teams: set) -> pd.DataFrame:
         if df_d is not None:
             during_wm_teams = set(df_d["Team"].unique())
 
-    auto_detected  = during_wm_teams - latest_teams
+    auto_detected = during_wm_teams - latest_teams
+
+    # Teams im neuesten Snapshot mit NaN-Wahrscheinlichkeit: Buchmacher zeigen
+    # keine Quoten mehr → ebenfalls als ausgeschieden behandeln.
+    latest_date = df["Datum"].max()
+    nan_teams = set(
+        df[(df["Datum"] == latest_date) & df["Wahrscheinlichkeit_Shin_in_Prozent"].isna()]["Team"]
+    )
+
     # Manuell eingetragene Teams immer als ausgeschieden behandeln –
     # auch wenn Buchmacher noch Quoten zeigen (und sie im latest-Snapshot stehen).
-    all_eliminated = set(ELIMINATED.keys()) | auto_detected
+    all_eliminated = set(ELIMINATED.keys()) | auto_detected | nan_teams
 
     records = []
     for team in sorted(all_eliminated):
         team_df = df[df["Team"] == team]
         if team_df.empty:
             continue
-        last_prob  = team_df.sort_values("Datum")["Wahrscheinlichkeit_Shin_in_Prozent"].iloc[-1]
+        probs      = team_df.sort_values("Datum")["Wahrscheinlichkeit_Shin_in_Prozent"].dropna()
+        last_prob  = probs.iloc[-1] if not probs.empty else 0.0
         stage_key  = ELIMINATED.get(team, "Gruppenphase")
         stage_text = STAGE_LABEL.get(stage_key, f"Ausgeschieden · {stage_key}")
         records.append({"Team": team, "Prob": last_prob, "Stage": stage_text})
@@ -194,13 +209,16 @@ def build_bar_chart(df):
     latest       = df["Datum"].max()
     latest_teams = set(df[df["Datum"] == latest]["Team"].unique())
 
-    # Aktive Teams: im neuesten Snapshot vorhanden UND nicht manuell als ausgeschieden markiert
+    elim_df = _get_eliminated_df(df, latest_teams)
+    all_eliminated_teams = set(elim_df["Team"])
+
+    # Aktive Teams: im neuesten Snapshot vorhanden, nicht ausgeschieden, Wert nicht NaN
     sub_active = (
-        df[(df["Datum"] == latest) & (~df["Team"].isin(ELIMINATED))]
+        df[(df["Datum"] == latest) & (~df["Team"].isin(all_eliminated_teams))
+           & df["Wahrscheinlichkeit_Shin_in_Prozent"].notna()]
         .sort_values("Wahrscheinlichkeit_Shin_in_Prozent", ascending=False)
         .reset_index(drop=True)
     )
-    elim_df = _get_eliminated_df(df, latest_teams)
 
     n_active = len(sub_active)
     n_elim   = len(elim_df)
@@ -382,6 +400,14 @@ def build_line_chart(df):
             frameon=False, box_alignment=(0, 0.5), annotation_clip=False,
         )
         ax.add_artist(ab)
+
+    # Vertikale Linie: WM-Start
+    wm_start = pd.Timestamp(wm_paths.WM_START_DATE)
+    if first_date < wm_start < last_date + pd.Timedelta(days=1):
+        ax.axvline(wm_start, color="#888888", linewidth=1.2, linestyle="--", zorder=2)
+        ax.text(wm_start + pd.Timedelta(days=span_days * 0.008),
+                ax.get_ylim()[1] * 0.985,
+                "WM-Start", fontsize=8.5, color="#666666", va="top")
 
     ax.set_ylabel("Siegwahrscheinlichkeit (%)", fontsize=11)
     ax.set_xlabel("Datum", fontsize=11)

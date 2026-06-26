@@ -32,10 +32,11 @@ import wm_paths
 # ---------------------------------------------------------------------------
 # Pfade
 # ---------------------------------------------------------------------------
-BASE           = os.path.dirname(os.path.abspath(__file__))
-RAW_DIR        = wm_paths.raw_dir()
-PROCESSED_FILE = wm_paths.processed_long_file()
-WIDE_FILE      = wm_paths.processed_wide_file()
+BASE             = os.path.dirname(os.path.abspath(__file__))
+RAW_DIR          = wm_paths.raw_dir()
+PROCESSED_FILE   = wm_paths.processed_long_file()
+WIDE_FILE        = wm_paths.processed_wide_file()
+PRE_WM_LONG_FILE = os.path.join(BASE, "processed_data_pre_wm", "processed_data_long.xlsx")
 
 # Spalten des Long-Formats (für eine leere/neue processed_data_long.xlsx)
 LONG_COLUMNS = [
@@ -279,6 +280,48 @@ def save_wide_format(df_long: pd.DataFrame) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Fehlende Teams in Snapshots auffüllen (during_wm-Phase)
+# ---------------------------------------------------------------------------
+
+def get_all_known_teams(df_existing: pd.DataFrame) -> set[str]:
+    """
+    Gibt alle Teams zurück, die je in pre_wm oder during_wm vorkamen.
+    Damit werden ausgeschiedene Teams identifiziert, für die NaN-Zeilen
+    in neuen Snapshots angelegt werden müssen.
+    """
+    teams: set[str] = set(df_existing["Team"].dropna()) if not df_existing.empty else set()
+    if os.path.exists(PRE_WM_LONG_FILE):
+        df_pre = load_existing(PRE_WM_LONG_FILE)
+        teams |= set(df_pre["Team"].dropna())
+    return teams
+
+
+def pad_missing_teams(
+    df_new: pd.DataFrame, all_teams: set[str], date_key: pd.Timestamp
+) -> pd.DataFrame:
+    """
+    Fügt für jedes bekannte Team, das im aktuellen Snapshot fehlt, eine Zeile
+    mit NaN-Werten ein. Dadurch bleiben ausgeschiedene Teams im Long-Format
+    sichtbar – die leeren Zellen signalisieren „keine Quoten verfügbar".
+    """
+    present = set(df_new["Team"])
+    missing = all_teams - present
+    if not missing:
+        return df_new
+    nan_rows = pd.DataFrame({
+        "Team":                               sorted(missing),
+        "Datum":                              date_key,
+        "Anzahl_Buchmacher":                  pd.NA,
+        "Durchsch_Quote":                     pd.NA,
+        "Wahrscheinlichkeit":                 pd.NA,
+        "Wahrscheinlichkeit_in_Prozent":      pd.NA,
+        "Wahrscheinlichkeit_Shin":            pd.NA,
+        "Wahrscheinlichkeit_Shin_in_Prozent": pd.NA,
+    })
+    return pd.concat([df_new, nan_rows], ignore_index=True)
+
+
+# ---------------------------------------------------------------------------
 # Hauptlogik
 # ---------------------------------------------------------------------------
 
@@ -309,11 +352,41 @@ def main():
     # Bestehende Daten laden
     df_existing = load_existing(PROCESSED_FILE)
 
+    # Fehlende Team-Zeilen in bestehenden Snapshots reparieren (nur during_wm)
+    repaired_count = 0
+    if wm_paths.during_wm():
+        all_known_teams = get_all_known_teams(df_existing)
+        if all_known_teams and not df_existing.empty:
+            repair_rows = []
+            for date_rep, grp in df_existing.groupby("Datum"):
+                missing = all_known_teams - set(grp["Team"])
+                for team in sorted(missing):
+                    repair_rows.append({
+                        "Team": team, "Datum": date_rep,
+                        "Anzahl_Buchmacher": pd.NA, "Durchsch_Quote": pd.NA,
+                        "Wahrscheinlichkeit": pd.NA, "Wahrscheinlichkeit_in_Prozent": pd.NA,
+                        "Wahrscheinlichkeit_Shin": pd.NA, "Wahrscheinlichkeit_Shin_in_Prozent": pd.NA,
+                    })
+            if repair_rows:
+                df_existing = pd.concat(
+                    [df_existing, pd.DataFrame(repair_rows)], ignore_index=True
+                )
+                df_existing = df_existing.sort_values(
+                    ["Datum", "Wahrscheinlichkeit_Shin"],
+                    ascending=[True, False],
+                    na_position="last",
+                ).reset_index(drop=True)
+                repaired_count = len(repair_rows)
+    else:
+        all_known_teams = set()
+
     existing_dates = set(df_existing["Datum"].dt.normalize().unique())
 
     print("=" * 60)
     print("  update_processed_data.py")
     print("=" * 60)
+    if repaired_count:
+        print(f"\n  [REPARIERT] {repaired_count} fehlende Team-Zeilen für bestehende Snapshots ergänzt.")
     print(f"\nBestehende Snapshots ({len(existing_dates)}):")
     print(f"  {sorted(d.date() for d in existing_dates)}")
 
@@ -340,6 +413,8 @@ def main():
             # Neues Datum -> verarbeiten
             print(f"  [NEU]        {date_key.date()}  ({len(filenames)} Datei(en)):")
             df_new = process_date(date_key, filenames)
+            if wm_paths.during_wm() and all_known_teams:
+                df_new = pad_missing_teams(df_new, all_known_teams, date_key)
             new_dfs.append(df_new)
             continue
 
@@ -363,12 +438,18 @@ def main():
         print(f"  [UPDATE]     {date_key.date()}  ({int(stored_bk)} BK -> {available_bk} BK):")
         dates_to_update.append(date_key)
         df_new = process_date(date_key, filenames)
+        if wm_paths.during_wm() and all_known_teams:
+            df_new = pad_missing_teams(df_new, all_known_teams, date_key)
         new_dfs.append(df_new)
 
     print()
 
     if not new_dfs:
-        print("Keine neuen oder aktualisierten Daten. processed_data_long.xlsx bleibt unveraendert.")
+        if repaired_count:
+            df_existing.to_excel(PROCESSED_FILE, index=False)
+            print(f"Reparierte Daten gespeichert  ->  {PROCESSED_FILE}")
+        else:
+            print("Keine neuen oder aktualisierten Daten. processed_data_long.xlsx bleibt unveraendert.")
         print()
         save_wide_format(df_existing)
         return
@@ -383,7 +464,8 @@ def main():
     df_updated = pd.concat([d for d in [df_existing] + new_dfs if not d.empty], ignore_index=True)
     df_updated = df_updated.sort_values(
         ["Datum", "Wahrscheinlichkeit_Shin"],
-        ascending=[True, False]
+        ascending=[True, False],
+        na_position="last",
     ).reset_index(drop=True)
 
     df_updated.to_excel(PROCESSED_FILE, index=False)
