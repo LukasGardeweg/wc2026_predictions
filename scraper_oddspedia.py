@@ -50,7 +50,7 @@ def _make_driver(headless: bool = False) -> uc.Chrome:
     opts.add_argument("--window-size=1920,1080")
     if headless:
         opts.add_argument("--headless=new")
-    return uc.Chrome(options=opts, version_main=147, headless=headless)
+    return uc.Chrome(options=opts, version_main=149, headless=headless)
 
 
 # ---------------------------------------------------------------------------

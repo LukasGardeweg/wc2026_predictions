@@ -31,9 +31,13 @@ OUT_FILE = os.path.join(BASE, "processed_match_predictions.xlsx")
 # Buchmacher-Spaltenpräfixe in der Rohdatei
 # ---------------------------------------------------------------------------
 BOOKMAKER_PREFIXES = ["bet365", "bwin", "iw", "ub", "lb", "bw", "bf"]
+QUALIFY_PREFIXES   = ["bet365", "ub", "lb", "bw", "bf"]
 
-OUTCOMES   = ["Heimsieg", "Unentschieden", "Heimniederlage"]
-SUFFIXES   = ["home", "draw", "away"]
+OUTCOMES         = ["Heimsieg", "Unentschieden", "Heimniederlage"]
+SUFFIXES         = ["home", "draw", "away"]
+
+QUALIFY_OUTCOMES = ["Heimteam qualifiziert", "Gastteam qualifiziert"]
+QUALIFY_SUFFIXES = ["home", "away"]
 
 
 def main():
@@ -87,6 +91,44 @@ def main():
                 "Wahrscheinlichkeit_Shin_in_Prozent": round(p_shin * 100, 4),
                 "Letzte_Aktualisierung":             today,
             })
+
+        # --- Qualifikations-Wahrscheinlichkeiten (binärer Markt) ---
+        q_odds_per = {s: [] for s in QUALIFY_SUFFIXES}
+        n_q = 0
+        for prefix in QUALIFY_PREFIXES:
+            vals = [pd.to_numeric(row.get(f"{prefix}_qualify_{s}"), errors="coerce")
+                    for s in QUALIFY_SUFFIXES]
+            if all(v > 1 for v in vals):
+                n_q += 1
+                for s, v in zip(QUALIFY_SUFFIXES, vals):
+                    q_odds_per[s].append(v)
+
+        if n_q > 0:
+            q_avg      = {s: sum(v) / len(v) for s, v in q_odds_per.items()}
+            q_list     = [q_avg[s] for s in QUALIFY_SUFFIXES]
+            q_overround = sum(1 / o for o in q_list)
+            q_basic    = [(1 / o) / q_overround for o in q_list]
+            q_shin     = shin.calculate_implied_probabilities(q_list, full_output=False)
+
+            print(f"           {spiel_id}  ->  {n_q} Buchmacher (Quali)  |  "
+                  f"Quoten: {q_avg['home']:.2f} / {q_avg['away']:.2f}")
+
+            for outcome, suffix, p_basic, p_shin in zip(
+                    QUALIFY_OUTCOMES, QUALIFY_SUFFIXES, q_basic, q_shin):
+                rows.append({
+                    "Spiel_ID":                          spiel_id,
+                    "Heimteam":                          row["Heimteam"],
+                    "Gastteam":                          row["Gastteam"],
+                    "Datum":                             row["Datum"],
+                    "Ausgang":                           outcome,
+                    "Anzahl_Buchmacher":                 n_q,
+                    "Durchsch_Quote":                    round(q_avg[suffix], 4),
+                    "Wahrscheinlichkeit":                round(p_basic, 6),
+                    "Wahrscheinlichkeit_in_Prozent":      round(p_basic * 100, 4),
+                    "Wahrscheinlichkeit_Shin":            round(p_shin, 6),
+                    "Wahrscheinlichkeit_Shin_in_Prozent": round(p_shin * 100, 4),
+                    "Letzte_Aktualisierung":             today,
+                })
 
     os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
 

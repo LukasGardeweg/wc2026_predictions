@@ -81,6 +81,14 @@ ELIMINATED = {
     "Katar":     "Gruppenphase",
     "Tschechien": "Gruppenphase",
     "Curacao":   "Gruppenphase",
+    "Südkorea":  "Gruppenphase",
+    "Schottland": "Gruppenphase",
+    "Iran":       "Gruppenphase",
+    "Neuseeland": "Gruppenphase",
+    "Uruguay":     "Gruppenphase",
+    "Saudi Arabien": "Gruppenphase",
+    "Irak": "Gruppenphase",
+    "Usbekistan": "Gruppenphase",
 }
 
 STAGE_LABEL = {
@@ -309,7 +317,7 @@ def build_bar_chart(df):
 
     fig.text(0.005, 0.005,
              "Institut für Trainingswissenschaft und Sportinformatik  ·  Lukas Gardeweg, Fabian Wunderlich und Daniel Memmert",
-             fontsize=8, color="#AAAAAA")
+             fontsize=9, color="#000000")
 
     fig.savefig(BAR_OUTPUT, dpi=200)
     plt.close(fig)
@@ -437,7 +445,7 @@ def build_line_chart(df):
 
     fig.text(0.005, 0.005,
              "Institut für Trainingswissenschaft und Sportinformatik  ·  Lukas Gardeweg, Fabian Wunderlich und Daniel Memmert",
-             fontsize=8, color="#AAAAAA")
+             fontsize=9, color="#000000")
 
     fig.savefig(LINE_OUTPUT, dpi=200)
     plt.close(fig)
