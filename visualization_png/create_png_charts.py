@@ -89,15 +89,32 @@ ELIMINATED = {
     "Saudi Arabien": "Gruppenphase",
     "Irak": "Gruppenphase",
     "Usbekistan": "Gruppenphase",
+    "Südafrika": "Sechzehntelfinale",
+    "Japan": "Sechzehntelfinale",
+    "Deutschland": "Sechzehntelfinale",
+    "Niederlande": "Sechzehntelfinale",
 }
 
 STAGE_LABEL = {
     "Gruppenphase":  "Ausgeschieden · Gruppenphase",
+    "Sechzehntelfinale": "Ausgeschieden · Sechzehntelfinale",
     "Achtelfinale":  "Ausgeschieden · Achtelfinale",
     "Viertelfinale": "Ausgeschieden · Viertelfinale",
     "Halbfinale":    "Ausgeschieden · Halbfinale",
     "Finale":        "Ausgeschieden · Finale",
 }
+
+# Ausscheidungsdatum pro Team – wenn gesetzt, endet die Zeitverlauf-Linie an diesem
+# Datum, auch wenn Buchmacher noch Quoten zeigen. Parallel zu ELIMINATED befüllen.
+ELIM_DATE: dict[str, pd.Timestamp] = {
+    "Deutschland":  pd.Timestamp("2026-06-29"),
+    "Japan":        pd.Timestamp("2026-06-29"),
+    "Niederlande":  pd.Timestamp("2026-06-29"),
+    "Südafrika":    pd.Timestamp("2026-06-29"),
+}
+
+# Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
+GRUPPENPHASE_ENDE = pd.Timestamp("2026-06-28")
 
 
 # ---------------------------------------------------------------------------
@@ -349,10 +366,12 @@ def spread_label_positions(values, min_gap, n_iter=2000):
 def build_line_chart(df):
     latest  = df["Datum"].max()
 
-    # Ranking nach letztem verfügbaren Wert pro Team – so bleiben ausgeschiedene
-    # Teams in der Top-15 sichtbar, auch wenn sie im neuesten Snapshot fehlen.
+    # Ranking nach letztem verfügbaren Wert pro Team – NaN-Zeilen werden
+    # ausgeschlossen, damit ausgeschiedene Teams (keine Quoten mehr) anhand
+    # ihres letzten gültigen Wertes eingeordnet werden und nicht aus der Top-15 fallen.
     top15 = (
-        df.sort_values("Datum")
+        df[df["Wahrscheinlichkeit_Shin_in_Prozent"].notna()]
+          .sort_values("Datum")
           .groupby("Team", as_index=False)
           .last()
           .sort_values("Wahrscheinlichkeit_Shin_in_Prozent", ascending=False)
@@ -371,11 +390,16 @@ def build_line_chart(df):
     last_team_dates  = []
     for i, team in enumerate(top15):
         tdf = df[df["Team"] == team].sort_values("Datum")
-        ax.plot(tdf["Datum"], tdf["Wahrscheinlichkeit_Shin_in_Prozent"],
+        # Nur gültige (nicht-NaN) Zeilen plotten – Linie endet am letzten echten
+        # Datenpunkt; ausgeschiedene Teams verschwinden so nicht, sondern hören auf.
+        tdf_valid = tdf[tdf["Wahrscheinlichkeit_Shin_in_Prozent"].notna()]
+        if team in ELIM_DATE:
+            tdf_valid = tdf_valid[tdf_valid["Datum"] <= ELIM_DATE[team]]
+        ax.plot(tdf_valid["Datum"], tdf_valid["Wahrscheinlichkeit_Shin_in_Prozent"],
                 marker="o", markersize=4.5, linewidth=2.2,
                 color=COLORS[i % len(COLORS)], zorder=3)
-        final_values.append(tdf["Wahrscheinlichkeit_Shin_in_Prozent"].iloc[-1])
-        last_team_dates.append(tdf["Datum"].iloc[-1])
+        final_values.append(tdf_valid["Wahrscheinlichkeit_Shin_in_Prozent"].iloc[-1])
+        last_team_dates.append(tdf_valid["Datum"].iloc[-1])
 
     final_values = np.array(final_values)
     y_max = final_values.max()
@@ -416,6 +440,13 @@ def build_line_chart(df):
         ax.text(wm_start + pd.Timedelta(days=span_days * 0.008),
                 ax.get_ylim()[1] * 0.985,
                 "WM-Start", fontsize=8.5, color="#666666", va="top")
+
+    # Vertikale Linie: Gruppenphase-Ende
+    if first_date < GRUPPENPHASE_ENDE <= last_date + pd.Timedelta(days=1):
+        ax.axvline(GRUPPENPHASE_ENDE, color="#888888", linewidth=1.2, linestyle="--", zorder=2)
+        ax.text(GRUPPENPHASE_ENDE + pd.Timedelta(days=span_days * 0.008),
+                ax.get_ylim()[1] * 0.985,
+                "Vorrunde Ende", fontsize=8.5, color="#666666", va="top")
 
     ax.set_ylabel("Siegwahrscheinlichkeit (%)", fontsize=11)
     ax.set_xlabel("Datum", fontsize=11)
