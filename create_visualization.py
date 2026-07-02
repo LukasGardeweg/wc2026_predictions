@@ -751,9 +751,8 @@ body {
 }
 .during-wm-placeholder { font-size: 12.5px; color: #999; margin: 0; }
 .during-wm-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-.match-cards { display: flex; flex-wrap: wrap; gap: 16px; }
+.match-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .match-card {
-  flex: 1 1 320px; min-width: 300px;
   border: 1px solid #EBEBEB; border-radius: 6px;
   padding: 14px 16px;
 }

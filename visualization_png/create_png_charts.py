@@ -111,10 +111,16 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Japan":        pd.Timestamp("2026-06-29"),
     "Niederlande":  pd.Timestamp("2026-06-29"),
     "Südafrika":    pd.Timestamp("2026-06-29"),
+    "Elfenbeinküste": pd.Timestamp("2026-06-30"),
+    "Schweden":       pd.Timestamp("2026-06-30"),
+    "Ecuador":        pd.Timestamp("2026-07-01"),
+    "Kongo":          pd.Timestamp("2026-07-01"),
+    "Senegal":        pd.Timestamp("2026-07-01"),
+    "Bosnien Herzegowina": pd.Timestamp("2026-07-02"),
 }
 
 # Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
-GRUPPENPHASE_ENDE = pd.Timestamp("2026-06-28")
+GRUPPENPHASE_ENDE = pd.Timestamp("2026-06-27")
 
 
 # ---------------------------------------------------------------------------
