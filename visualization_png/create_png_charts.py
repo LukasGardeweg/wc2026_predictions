@@ -93,6 +93,18 @@ ELIMINATED = {
     "Japan": "Sechzehntelfinale",
     "Deutschland": "Sechzehntelfinale",
     "Niederlande": "Sechzehntelfinale",
+    "Elfenbeinküste": "Sechzehntelfinale",
+    "Schweden": "Sechzehntelfinale",
+    "Ecuador": "Sechzehntelfinale",
+    "Kongo": "Sechzehntelfinale",
+    "Senegal": "Sechzehntelfinale",
+    "Bosnien Herzegowina": "Sechzehntelfinale",
+    "Österreich": "Sechzehntelfinale",
+    "Kroatien": "Sechzehntelfinale",
+    "Schweiz": "Sechzehntelfinale",
+    "Australien": "Sechzehntelfinale",
+    "Kap Verde": "Sechzehntelfinale",
+    "Ghana": "Sechzehntelfinale",
 }
 
 STAGE_LABEL = {
@@ -117,6 +129,12 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Kongo":          pd.Timestamp("2026-07-01"),
     "Senegal":        pd.Timestamp("2026-07-01"),
     "Bosnien Herzegowina": pd.Timestamp("2026-07-02"),
+    "Österreich": pd.Timestamp("2026-07-02"),
+    "Kroatien": pd.Timestamp("2026-07-03"),
+    "Schweiz": pd.Timestamp("2026-07-03"),
+    "Australien": pd.Timestamp("2026-07-03"),
+    "Kap Verde": pd.Timestamp("2026-07-04"),
+    "Ghana": pd.Timestamp("2026-07-04"),
 }
 
 # Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
