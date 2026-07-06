@@ -105,6 +105,10 @@ ELIMINATED = {
     "Australien": "Sechzehntelfinale",
     "Kap Verde": "Sechzehntelfinale",
     "Ghana": "Sechzehntelfinale",
+    "Kanada": "Achtelfinale",
+    "Paraguay": "Achtelfinale",
+    "Brasilien": "Achtelfinale",
+    "Mexiko": "Achtelfinale",
 }
 
 STAGE_LABEL = {
@@ -135,6 +139,10 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Australien": pd.Timestamp("2026-07-03"),
     "Kap Verde": pd.Timestamp("2026-07-04"),
     "Ghana": pd.Timestamp("2026-07-04"),
+    "Kanada": pd.Timestamp("2026-07-05"),
+    "Paraguay": pd.Timestamp("2026-07-05"),
+    "Brasilien": pd.Timestamp("2026-07-05"),
+    "Mexiko": pd.Timestamp("2026-07-05"),
 }
 
 # Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
