@@ -101,7 +101,6 @@ ELIMINATED = {
     "Bosnien Herzegowina": "Sechzehntelfinale",
     "Österreich": "Sechzehntelfinale",
     "Kroatien": "Sechzehntelfinale",
-    "Schweiz": "Sechzehntelfinale",
     "Australien": "Sechzehntelfinale",
     "Kap Verde": "Sechzehntelfinale",
     "Ghana": "Sechzehntelfinale",
@@ -109,6 +108,10 @@ ELIMINATED = {
     "Paraguay": "Achtelfinale",
     "Brasilien": "Achtelfinale",
     "Mexiko": "Achtelfinale",
+    "Portugal": "Achtelfinale",
+    "USA": "Achtelfinale",
+    "Ägypten": "Achtelfinale",
+    "Kolumbien": "Achtelfinale",
 }
 
 STAGE_LABEL = {
@@ -135,7 +138,6 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Bosnien Herzegowina": pd.Timestamp("2026-07-02"),
     "Österreich": pd.Timestamp("2026-07-02"),
     "Kroatien": pd.Timestamp("2026-07-03"),
-    "Schweiz": pd.Timestamp("2026-07-03"),
     "Australien": pd.Timestamp("2026-07-03"),
     "Kap Verde": pd.Timestamp("2026-07-04"),
     "Ghana": pd.Timestamp("2026-07-04"),
@@ -143,6 +145,10 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Paraguay": pd.Timestamp("2026-07-05"),
     "Brasilien": pd.Timestamp("2026-07-05"),
     "Mexiko": pd.Timestamp("2026-07-05"),
+    "Portugal": pd.Timestamp("2026-07-05"),
+    "USA": pd.Timestamp("2026-07-06"),
+    "Ägypten": pd.Timestamp("2026-07-06"),
+    "Kolumbien": pd.Timestamp("2026-07-06"),
 }
 
 # Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
