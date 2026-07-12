@@ -112,7 +112,10 @@ ELIMINATED = {
     "USA": "Achtelfinale",
     "Ägypten": "Achtelfinale",
     "Kolumbien": "Achtelfinale",
-    "Marokko": "Viertelfinale"
+    "Marokko": "Viertelfinale",
+    "Belgien": "Viertelfinale",
+    "Norwegen": "Viertelfinale",
+    "Schweiz": "Viertelfinale",
 }
 
 STAGE_LABEL = {
@@ -151,6 +154,9 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Ägypten": pd.Timestamp("2026-07-06"),
     "Kolumbien": pd.Timestamp("2026-07-06"),
     "Marokko": pd.Timestamp("2026-07-09"),
+    "Belgien": pd.Timestamp("2026-07-10"),
+    "Norwegen": pd.Timestamp("2026-07-11"),
+    "Schweiz": pd.Timestamp("2026-07-12"),
 }
 
 # Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
