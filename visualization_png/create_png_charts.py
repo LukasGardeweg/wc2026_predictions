@@ -116,6 +116,8 @@ ELIMINATED = {
     "Belgien": "Viertelfinale",
     "Norwegen": "Viertelfinale",
     "Schweiz": "Viertelfinale",
+    "Frankreich": "Halbfinale",
+    "England": "Halbfinale",
 }
 
 STAGE_LABEL = {
@@ -157,6 +159,8 @@ ELIM_DATE: dict[str, pd.Timestamp] = {
     "Belgien": pd.Timestamp("2026-07-10"),
     "Norwegen": pd.Timestamp("2026-07-11"),
     "Schweiz": pd.Timestamp("2026-07-12"),
+    "Frankreich": pd.Timestamp("2026-07-14"),
+    "England": pd.Timestamp("2026-07-15"),
 }
 
 # Ende der Gruppenphase – erscheint als gestrichelte vertikale Linie im Zeitverlauf.
