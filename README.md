@@ -24,7 +24,7 @@ But: **a probability is not a promise.** Even a team with an 80% chance of winni
 
 ### Time series of the Top 15
 
-<video src="visualization_png/wm2026_zeitverlauf_top15_animation.mp4" controls></video>
+<video src="https://raw.githubusercontent.com/LukasGardeweg/wc2026_predictions/main/visualization_png/wm2026_zeitverlauf_top15_animation.mp4" controls></video>
 
 An interactive version with additional filters (Top 15 / ranks 16–30, Shin vs. normalisation method, before/during the tournament) is available in [`wm2026_probabilities.html`](wm2026_probabilities.html) – just open it locally in a browser.
 
