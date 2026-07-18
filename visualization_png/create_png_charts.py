@@ -413,13 +413,13 @@ def spread_label_positions(values, min_gap, n_iter=2000):
     return pos
 
 
-def build_line_chart(df):
-    latest  = df["Datum"].max()
-
-    # Ranking nach letztem verfügbaren Wert pro Team – NaN-Zeilen werden
-    # ausgeschlossen, damit ausgeschiedene Teams (keine Quoten mehr) anhand
-    # ihres letzten gültigen Wertes eingeordnet werden und nicht aus der Top-15 fallen.
-    top15 = (
+def select_top15(df: pd.DataFrame) -> list:
+    """
+    Ermittelt die Top-15-Teams nach letztem verfügbaren Wert pro Team – NaN-Zeilen
+    werden ausgeschlossen, damit ausgeschiedene Teams (keine Quoten mehr) anhand
+    ihres letzten gültigen Wertes eingeordnet werden und nicht aus der Top-15 fallen.
+    """
+    return (
         df[df["Wahrscheinlichkeit_Shin_in_Prozent"].notna()]
           .sort_values("Datum")
           .groupby("Team", as_index=False)
@@ -427,6 +427,11 @@ def build_line_chart(df):
           .sort_values("Wahrscheinlichkeit_Shin_in_Prozent", ascending=False)
           ["Team"].tolist()
     )[:15]
+
+
+def build_line_chart(df):
+    latest = df["Datum"].max()
+    top15  = select_top15(df)
 
     fig, ax = plt.subplots(figsize=(12, 8), dpi=200)
     plt.subplots_adjust(left=0.065, right=0.95, top=0.88, bottom=0.13)

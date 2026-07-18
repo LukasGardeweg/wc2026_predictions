@@ -22,17 +22,9 @@ But: **a probability is not a promise.** Even a team with an 80% chance of winni
 
 ---
 
-## 📊 Current Predictions
-
-The two charts below show the **current state** of the prediction and are **automatically regenerated with every new data update** – they run live in parallel with the tournament (see the date in each chart's title).
-
-### Win probabilities of all 48 teams (Shin model)
-
-![Bar chart](visualization_png/wm2026_balkendiagramm_alle_teams.png?raw=true)
-
 ### Time series of the Top 15
 
-![Time series](visualization_png/wm2026_zeitverlauf_top15.png?raw=true)
+<video src="visualization_png/wm2026_zeitverlauf_top15_animation.mp4" controls></video>
 
 An interactive version with additional filters (Top 15 / ranks 16–30, Shin vs. normalisation method, before/during the tournament) is available in [`wm2026_probabilities.html`](wm2026_probabilities.html) – just open it locally in a browser.
 
