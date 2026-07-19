@@ -235,11 +235,11 @@ def build_animation(df: pd.DataFrame) -> None:
                     ax.get_ylim()[1] * 0.985,
                     "Vorrunde Ende", fontsize=8.5, color="#666666", va="top", alpha=gp_alpha)
 
-        ax.set_ylabel("Siegwahrscheinlichkeit (%)", fontsize=11)
-        ax.set_xlabel("Datum", fontsize=11)
+        ax.set_ylabel("SProbability of Winning (%)", fontsize=11)
+        ax.set_xlabel("Date", fontsize=11)
         ax.set_title(
-            f"Zeitverlauf der Top 15 Siegwahrscheinlichkeiten\n"
-            f"Stand: {current_display_date.strftime('%d.%m.%Y')}",
+            f"Changes Over Time in the Top 15 Probabilities of Winning\n"
+            f"Status: {current_display_date.strftime('%d.%m.%Y')}",
             fontsize=14, fontweight="bold", color="#2C3E50", pad=14,
         )
 
@@ -268,9 +268,9 @@ def build_animation(df: pd.DataFrame) -> None:
                              markeredgewidth=1.6, color="#888888", zorder=3)
 
         fig.texts.clear()
-        fig.text(0.005, 0.005,
-                 "Institut für Trainingswissenschaft und Sportinformatik  ·  Lukas Gardeweg, Fabian Wunderlich und Daniel Memmert",
-                 fontsize=9, color="#000000")
+        fig.text(0.02, 0.02,
+                 "Institute of Exercise Training and Sport Informatics · Lukas Gardeweg, Fabian Wunderlich und Daniel Memmert",
+                 fontsize=10, color="#000000")
 
     anim = FuncAnimation(fig, draw_frame, frames=n_total, blit=False)
     writer = FFMpegWriter(fps=FPS, bitrate=2400)
