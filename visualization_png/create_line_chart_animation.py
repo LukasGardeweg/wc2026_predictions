@@ -226,16 +226,16 @@ def build_animation(df: pd.DataFrame) -> None:
             ax.axvline(wm_start, color="#888888", linewidth=1.2, linestyle="--", zorder=2, alpha=wm_alpha)
             ax.text(wm_start + pd.Timedelta(days=span_days * 0.008),
                     ax.get_ylim()[1] * 0.985,
-                    "WM-Start", fontsize=8.5, color="#666666", va="top", alpha=wm_alpha)
+                    "Start of WC", fontsize=8.5, color="#666666", va="top", alpha=wm_alpha)
 
         gp_alpha = _smoothstep(t_days, gp_ende_days, gp_ende_days + REFLINE_FADE_DAYS)
         if 0 < gp_ende_days <= span_days and gp_alpha > 0:
             ax.axvline(cpc.GRUPPENPHASE_ENDE, color="#888888", linewidth=1.2, linestyle="--", zorder=2, alpha=gp_alpha)
             ax.text(cpc.GRUPPENPHASE_ENDE + pd.Timedelta(days=span_days * 0.008),
                     ax.get_ylim()[1] * 0.985,
-                    "Vorrunde Ende", fontsize=8.5, color="#666666", va="top", alpha=gp_alpha)
+                    "End of group stage", fontsize=8.5, color="#666666", va="top", alpha=gp_alpha)
 
-        ax.set_ylabel("SProbability of Winning (%)", fontsize=11)
+        ax.set_ylabel("Probability of Winning (%)", fontsize=11)
         ax.set_xlabel("Date", fontsize=11)
         ax.set_title(
             f"Changes Over Time in the Top 15 Probabilities of Winning\n"
